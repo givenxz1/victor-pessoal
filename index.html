@@ -1,0 +1,2755 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apexel — Dashboard Empresarial</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@1.0.2/dist/basecoat.cdn.min.css">
+  <style>
+/* Skip artifact shell — fixed styles served beside every artifact.
+   Complements basecoat; artifacts override --accent for their own identity. */
+:root {
+  color-scheme: light dark;
+  --accent: #2563eb;
+  --accent-contrast: #ffffff;
+  --accent-text: color-mix(in srgb, var(--accent) 72%, #000);
+  --bg: #f8f9fb;
+  --surface: #ffffff;
+  --text: #14171f;
+  --text-muted: #5b6472;
+  --border: rgba(20, 23, 31, 0.10);
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(20, 23, 31, 0.08);
+  --space: 16px;
+}
+/* Theme resolution. Without data-theme the viewer's system preference decides,
+   as it always did. With it, the artifact's own choice wins in BOTH directions:
+   a page that hardcodes one palette must not be handed the opposite set of
+   tokens by the machine it happens to be opened on. The dark values appear
+   twice because a media query cannot be folded into a selector list.
+   The attribute sits inside :where() so these blocks keep the specificity of a
+   bare :root — the page's own <style> is linked after this file and must go on
+   overriding any token it wants, exactly as it could before. */
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    --accent-text: color-mix(in srgb, var(--accent) 78%, #fff);
+    --bg: #101318;
+    --surface: #181c23;
+    --text: #eef1f6;
+    --text-muted: #9aa4b2;
+    --border: rgba(238, 241, 246, 0.12);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+}
+:root:where([data-theme="dark"]) {
+  color-scheme: dark;
+  --accent-text: color-mix(in srgb, var(--accent) 78%, #fff);
+  --bg: #101318;
+  --surface: #181c23;
+  --text: #eef1f6;
+  --text-muted: #9aa4b2;
+  --border: rgba(238, 241, 246, 0.12);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+:root:where([data-theme="light"]) { color-scheme: light; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; display: block; }
+
+.shell-container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+.shell-section { padding: calc(var(--space) * 2) 0; }
+.shell-grid { display: grid; gap: var(--space); grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.shell-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: var(--space); }
+.shell-footer { padding: 24px 0 40px; color: var(--text-muted); font-size: 13px; }
+
+.shell-hero { padding: calc(var(--space) * 3) 0 calc(var(--space) * 2); }
+.shell-hero h1 { font-size: clamp(26px, 4vw, 40px); line-height: 1.15; margin: 0 0 10px; text-wrap: balance; }
+.shell-hero p { color: var(--text-muted); max-width: 60ch; margin: 0; }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: var(--space);
+}
+
+.kpi { display: flex; flex-direction: column; gap: 4px; }
+.kpi .kpi-value { font-size: 28px; font-weight: 650; line-height: 1.1; }
+.kpi .kpi-label { font-size: 13px; color: var(--text-muted); }
+.kpi .kpi-delta { font-size: 12.5px; font-weight: 600; }
+.kpi .kpi-delta.up { color: #0a8f3c; }
+.kpi .kpi-delta.down { color: #cf3131; }
+
+table.shell-table { border-collapse: collapse; width: 100%; font-size: 14px; }
+table.shell-table th {
+  text-align: left; font-size: 11.5px; letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--text-muted); font-weight: 600;
+}
+table.shell-table th, table.shell-table td { padding: 9px 12px 9px 0; border-bottom: 1px solid var(--border); }
+table.shell-table td.num, table.shell-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+
+.chart-box { width: 100%; min-height: 220px; }
+.chart-box svg { width: 100%; height: auto; display: block; }
+
+.muted { color: var(--text-muted); }
+.accent { color: var(--accent-text); }
+.shell-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent-text);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .shell-fade { animation: shell-fade 400ms ease both; }
+  @keyframes shell-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+}
+
+</style>
+  
+  <style>
+    :root {
+      --accent: #BFFF3C;
+      --accent-contrast: #000000;
+      --bg: #000000;
+      --surface: #0d0d0f;
+      --surface-elevated: #141417;
+      --border: #232328;
+      --danger: #ff5c5c;
+      --info: #38bdf8;
+      --warning: #f59e0b;
+      --success: #BFFF3C;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 12px;
+      --radius-modal: 24px;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: #f3f4f6;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Utilitários tipográficos */
+    .label-caps {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #9ca3af;
+      font-weight: 600;
+    }
+
+    /* Logo Geometrico */
+    .brand-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: #ffffff;
+      user-select: none;
+    }
+    .brand-logo-icon {
+      width: 38px;
+      height: 38px;
+      background: #141417;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px rgba(191, 255, 60, 0.12);
+    }
+    .brand-name {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: 0.22em;
+      color: #ffffff;
+    }
+    .brand-dot {
+      color: var(--accent);
+    }
+
+    /* Banner Modo Demonstração */
+    #demo-banner {
+      background: #141417;
+      border-bottom: 1px solid var(--border);
+      color: #9ca3af;
+      font-size: 0.8rem;
+      padding: 6px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .badge-demo {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    /* Tela de Login */
+    #login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: radial-gradient(circle at 50% 30%, #16181f 0%, #000000 80%);
+    }
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-modal);
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 440px;
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+    }
+    .login-btn-google {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      padding: 13px 20px;
+      background: #141417;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-top: 24px;
+    }
+    .login-btn-google:hover {
+      border-color: #3b3b44;
+      background: #1a1a20;
+      transform: translateY(-1px);
+    }
+    .login-btn-demo {
+      display: block;
+      width: 100%;
+      padding: 13px 20px;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius-md);
+      color: #000000;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: all 0.2s ease;
+    }
+    .login-btn-demo:hover {
+      box-shadow: 0 0 24px rgba(191, 255, 60, 0.4);
+      transform: translateY(-1px);
+    }
+
+    /* Layout Principal (Sidebar + Main) */
+    #app-screen {
+      display: none;
+      min-height: 100vh;
+      flex-direction: row;
+    }
+    #app-screen.active {
+      display: flex;
+    }
+
+    aside.sidebar {
+      width: 260px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 24px 16px;
+      box-sizing: border-box;
+      z-index: 40;
+    }
+    .nav-list {
+      list-style: none;
+      padding: 0;
+      margin: 32px 0 auto 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      color: #9ca3af;
+      font-weight: 600;
+      font-size: 0.92rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-decoration: none;
+      border: 1px solid transparent;
+    }
+    .nav-item:hover {
+      color: #ffffff;
+      background: var(--surface-elevated);
+    }
+    .nav-item.active {
+      color: #000000;
+      background: var(--accent);
+      font-weight: 700;
+      box-shadow: 0 0 20px rgba(191, 255, 60, 0.25);
+    }
+
+    .sidebar-footer {
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: #e5e7eb;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #232328;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.85rem;
+      border: 1px solid #33333d;
+      flex-shrink: 0;
+    }
+    .btn-logout {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: #9ca3af;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+    .btn-logout:hover {
+      background: rgba(255, 92, 92, 0.15);
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    /* Conteúdo Principal */
+    main.content-area {
+      flex: 1;
+      padding: 32px;
+      overflow-y: auto;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .top-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .page-title {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0;
+      letter-spacing: -0.02em;
+    }
+    .page-title span.accent {
+      color: var(--accent);
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Mobile toggle */
+    .mobile-menu-btn {
+      display: none;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: #ffffff;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+    }
+
+    /* Cards e Superfícies */
+    .card-dark {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-sizing: border-box;
+    }
+    .card-elevated {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+    }
+
+    /* Grid de KPIs */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .kpi-card:hover {
+      border-color: #3b3b45;
+      transform: translateY(-2px);
+    }
+    .kpi-val {
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+    }
+    .kpi-val.positive {
+      color: var(--accent);
+    }
+    .kpi-val.negative {
+      color: var(--danger);
+    }
+
+    /* Botões Padrão */
+    .btn-accent {
+      background: var(--accent);
+      color: #000000;
+      border: none;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+    }
+    .btn-accent:hover {
+      box-shadow: 0 0 16px rgba(191, 255, 60, 0.4);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: var(--surface-elevated);
+      color: #ffffff;
+      border: 1px solid var(--border);
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+    }
+    .btn-secondary:hover {
+      background: #1c1c22;
+      border-color: #3f3f4c;
+    }
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      border-radius: 8px;
+    }
+
+    /* Barras de progresso */
+    .progress-bar-bg {
+      background: #1e1e24;
+      border-radius: 999px;
+      height: 8px;
+      width: 100%;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+    .progress-bar-fill {
+      background: var(--accent);
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.4s ease;
+      box-shadow: 0 0 8px rgba(191, 255, 60, 0.5);
+    }
+
+    /* Badges de Status Arredondadas */
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .badge-pill.status-green {
+      background: rgba(191, 255, 60, 0.14);
+      color: var(--accent);
+      border: 1px solid rgba(191, 255, 60, 0.4);
+    }
+    .badge-pill.status-blue {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--info);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+    .badge-pill.status-amber {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+    .badge-pill.status-red {
+      background: rgba(255, 92, 92, 0.15);
+      color: var(--danger);
+      border: 1px solid rgba(255, 92, 92, 0.35);
+    }
+    .badge-pill.status-gray {
+      background: rgba(156, 163, 175, 0.15);
+      color: #9ca3af;
+      border: 1px solid #374151;
+    }
+
+    /* Badges de Categorias - Gastos Pessoais */
+    .badge-cat-comida {
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+    .badge-cat-lazer {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+    }
+    .badge-cat-investimento {
+      background: rgba(191, 255, 60, 0.15);
+      color: #BFFF3C;
+      border: 1px solid rgba(191, 255, 60, 0.45);
+    }
+    .badge-cat-guardado {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+    .badge-cat-saude {
+      background: rgba(244, 63, 94, 0.15);
+      color: #fb7185;
+      border: 1px solid rgba(244, 63, 94, 0.4);
+    }
+    .badge-cat-transporte {
+      background: rgba(168, 85, 247, 0.15);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.4);
+    }
+    .badge-cat-educacao {
+      background: rgba(6, 182, 212, 0.15);
+      color: #22d3ee;
+      border: 1px solid rgba(6, 182, 212, 0.4);
+    }
+    .badge-cat-outros {
+      background: rgba(156, 163, 175, 0.15);
+      color: #9ca3af;
+      border: 1px solid #374151;
+    }
+
+    .alert-info-box {
+      background: #141417;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      color: #d1d5db;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    /* Tabelas */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+    table.apex-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+    table.apex-table th {
+      background: #111114;
+      padding: 14px 18px;
+      color: #9ca3af;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid var(--border);
+    }
+    table.apex-table td {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      color: #e5e7eb;
+    }
+    table.apex-table tr:last-child td {
+      border-bottom: none;
+    }
+    table.apex-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* Modais */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 100;
+    }
+    .modal-overlay.open {
+      display: flex;
+    }
+    .modal-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-modal);
+      padding: 32px;
+      width: 100%;
+      max-width: 540px;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.9);
+      position: relative;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .modal-header h3 {
+      margin: 0;
+      font-size: 1.3rem;
+      color: #ffffff;
+      font-weight: 700;
+    }
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: #9ca3af;
+      font-size: 1.4rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .modal-close:hover {
+      color: #ffffff;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+    }
+    .form-control {
+      width: 100%;
+      background: #141417;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 11px 14px;
+      color: #ffffff;
+      font-size: 0.9rem;
+      box-sizing: border-box;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-control:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(191, 255, 60, 0.15);
+    }
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    /* Impressão / PDF Preview Modal */
+    #print-modal .modal-box {
+      max-width: 700px;
+      background: #0d0d0f;
+    }
+    .receipt-paper {
+      background: #ffffff;
+      color: #111827;
+      border-radius: 12px;
+      padding: 32px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    }
+    .receipt-header-black {
+      background: #000000;
+      color: #ffffff;
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    /* Gráfico Financeiro SVG Custom */
+    .chart-canvas-wrapper {
+      position: relative;
+      width: 100%;
+      height: 280px;
+    }
+    svg.apex-line-chart {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    /* Responsividade */
+    @media (max-width: 900px) {
+      aside.sidebar {
+        position: fixed;
+        left: -280px;
+        transition: left 0.3s ease;
+      }
+      aside.sidebar.mobile-open {
+        left: 0;
+      }
+      .mobile-menu-btn {
+        display: inline-flex;
+      }
+      main.content-area {
+        padding: 20px 16px;
+      }
+    }
+
+    /* Regras de Impressão */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #print-area, #print-area * {
+        visibility: visible;
+      }
+      #print-area {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 20px;
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Banner do Modo Demonstração -->
+  <div id="demo-banner">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span class="badge-demo"></span>
+      <span><strong>Modo demonstração</strong> — dados fictícios carregados em memória</span>
+    </div>
+    <span style="font-size: 0.75rem; color: #6b7280;">APEXEL v1.0 • Enterprise Core</span>
+  </div>
+
+  <!-- TELA DE LOGIN -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+        <div class="brand-logo">
+          <div class="brand-logo-icon" style="width: 54px; height: 54px; border-radius: 16px;">
+            <svg width="34" height="34" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Letra A e X angulares brancas -->
+              <path d="M7 32L17 8H23L33 32" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 28L28 12" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+              <!-- Barra diagonal verde neon que corta o A -->
+              <path d="M5 23L27 15" stroke="#BFFF3C" stroke-width="3.8" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="brand-name" style="font-size: 1.8rem; margin-bottom: 6px;">APEXEL<span class="brand-dot">.</span></div>
+      <p style="color: #9ca3af; margin: 0 0 28px 0; font-size: 0.95rem;">
+        Gestão integrada de clientes, projetos e finanças
+      </p>
+
+      <!-- Botão Google OAuth -->
+      <button class="login-btn-google" id="btn-google-login">
+        <svg width="20" height="20" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.15z"/>
+          <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.26 21.36 7.33 24 12 24z"/>
+          <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.26C.46 8.16 0 9.94 0 12s.46 3.84 1.26 5.42l4.02-3.15z"/>
+          <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+        </svg>
+        Entrar com Google
+      </button>
+
+      <!-- Botão Fallback Modo Demo -->
+      <button class="login-btn-demo" id="btn-demo-login">
+        Entrar em modo demonstração
+      </button>
+
+      <p style="font-size: 0.75rem; color: #6b7280; margin-top: 24px; line-height: 1.4;">
+        Acesso rápido com dados pré-carregados para avaliação do sistema sem necessidade de credenciais externas.
+      </p>
+    </div>
+  </div>
+
+  <!-- APLICAÇÃO PRINCIPAL -->
+  <div id="app-screen">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="app-sidebar">
+      <div class="brand-logo" style="margin-bottom: 8px;">
+        <div class="brand-logo-icon">
+          <svg width="24" height="24" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7 32L17 8H23L33 32" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 28L28 12" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+            <path d="M5 23L27 15" stroke="#BFFF3C" stroke-width="3.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="brand-name">APEXEL<span class="brand-dot">.</span></div>
+      </div>
+
+      <ul class="nav-list">
+        <li><a class="nav-item active" data-tab="visao-geral"><span>📊</span> Visão Geral</a></li>
+        <li><a class="nav-item" data-tab="financeiro"><span>💰</span> Financeiro</a></li>
+        <li><a class="nav-item" data-tab="gastos-pessoais"><span>🏠</span> Gastos Pessoais</a></li>
+        <li><a class="nav-item" data-tab="clientes"><span>👥</span> Clientes</a></li>
+        <li><a class="nav-item" data-tab="projetos"><span>💼</span> Projetos</a></li>
+        <li><a class="nav-item" data-tab="recibos"><span>🧾</span> Recibos</a></li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="user-pill">
+          <div class="user-avatar" id="sidebar-avatar">A</div>
+          <div style="overflow: hidden;">
+            <div id="sidebar-user-name" style="font-weight: 700; color: #ffffff; font-size: 0.85rem;">Admin Apexel</div>
+            <div id="sidebar-user-email" style="font-size: 0.72rem; color: #9ca3af; text-overflow: ellipsis; overflow: hidden;">demo@apexel.com.br</div>
+          </div>
+        </div>
+        <button class="btn-logout" id="btn-logout">Sair da conta</button>
+      </div>
+    </aside>
+
+    <!-- Área de Conteúdo -->
+    <main class="content-area">
+
+      <!-- SEÇÃO 1: VISÃO GERAL -->
+      <section id="section-visao-geral" class="tab-content">
+        <div class="top-header">
+          <div>
+            <button class="mobile-menu-btn" id="mobile-toggle">☰ Menu</button>
+            <h1 class="page-title">Visão <span class="accent">Geral</span></h1>
+            <span class="label-caps">Métricas operacionais e consolidação executiva</span>
+          </div>
+          <div class="header-actions">
+            <button class="btn-accent" onclick="openModal('modal-projeto')">+ Novo Projeto</button>
+          </div>
+        </div>
+
+        <!-- 5 KPIs da Visão Geral -->
+        <div class="kpi-row">
+          <div class="kpi-card">
+            <span class="label-caps">Clientes Ativos</span>
+            <div class="kpi-val" id="vg-kpi-clientes">0</div>
+            <span style="font-size: 0.75rem; color: var(--accent);">● Em carteira regular</span>
+          </div>
+          <div class="kpi-card">
+            <span class="label-caps">Projetos em Andamento</span>
+            <div class="kpi-val" id="vg-kpi-projetos">0</div>
+            <span style="font-size: 0.75rem; color: var(--info);">Execução ativa</span>
+          </div>
+          <div class="kpi-card">
+            <span class="label-caps">Concluídos no Mês</span>
+            <div class="kpi-val" id="vg-kpi-concluidos">0</div>
+            <span style="font-size: 0.75rem; color: #9ca3af;">Ciclos finalizados</span>
+          </div>
+          <div class="kpi-card">
+            <span class="label-caps">Receita do Mês</span>
+            <div class="kpi-val positive" id="vg-kpi-receita">R$ 0,00</div>
+            <span style="font-size: 0.75rem; color: var(--accent);">Recibos liquidados</span>
+          </div>
+          <div class="kpi-card">
+            <span class="label-caps">Valor a Receber</span>
+            <div class="kpi-val" id="vg-kpi-areceber" style="color: var(--warning);">R$ 0,00</div>
+            <span style="font-size: 0.75rem; color: #9ca3af;">Contratos emitidos</span>
+          </div>
+        </div>
+
+        <!-- Linha inferior: Projetos em Andamento + Gráfico de Receita por Mês -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 24px;">
+          <!-- Card Projetos em Andamento -->
+          <div class="card-dark">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+              <h3 style="margin: 0; font-size: 1.1rem; color: #ffffff;">Projetos em andamento</h3>
+              <span class="label-caps">Status atual</span>
+            </div>
+            <div id="vg-projects-list" style="display: flex; flex-direction: column; gap: 16px;">
+              <!-- Preenchido via script -->
+            </div>
+          </div>
+
+          <!-- Gráfico Receita por Mês -->
+          <div class="card-dark">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+              <h3 style="margin: 0; font-size: 1.1rem; color: #ffffff;">Receita por mês</h3>
+              <span class="label-caps">Último semestre</span>
+            </div>
+            <div class="chart-box" id="chart-receita-mes" style="height: 250px;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SEÇÃO 2: FINANCEIRO -->
+      <section id="section-financeiro" class="tab-content" style="display: none;">
+        <div class="top-header">
+          <div>
+            <h1 class="page-title">Gestão <span class="accent">Financeira</span></h1>
+            <span class="label-caps">Fluxo de caixa, despesas e faturamento</span>
+          </div>
+          <div class="header-actions">
+            <button class="btn-secondary" onclick="exportMonthlyReport()"><span style="color: var(--accent);">📄</span> Exportar PDF</button>
+            <button class="btn-accent" onclick="openModal('modal-despesa')">+ Despesa</button>
+          </div>
+        </div>
+
+        <!-- 4 KPIs Financeiros -->
+        <div class="kpi-row">
+          <div class="kpi-card">
+            <span class="label-caps">Faturamento Mensal</span>
+            <div class="kpi-val positive" id="fin-kpi-faturamento">R$ 0,00</div>
+            <span style="font-size: 0.75rem; color: #9ca3af;">Entradas confirmadas</span>
+          </div>
+          <div class="kpi-card">
+            <span class="label-caps">Recebimentos Pendentes</span>
+            <div class="kpi-val" id="fin-kpi-pendentes" style="color: var(--warning);">R$ 0,00</div>
+            <span style="font-size: 0.75rem; color: #9ca3af;">Aguardando liquidação</span>
+          </div>
+          <div class="kpi-card">
+            <span class="label-caps">Despesas do Mês</span>
+            <div class="kpi-val negative" id="fin-kpi-despesas">R$ 0,00</div>
+            <span style="font-size: 0.75rem; color: var(--danger);">Custos operacionais</span>
+          </div>
+          <div class="kpi-card">
+            <span class="label-caps">Lucro Estimado</span>
+            <div class="kpi-val" id="fin-kpi-lucro">R$ 0,00</div>
+            <span style="font-size: 0.75rem; color: #9ca3af;">Faturamento - Despesas</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 24px; margin-bottom: 28px;">
+          <!-- Gráfico de Linha: Receitas x Despesas -->
+          <div class="card-dark" style="grid-column: span 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <div>
+                <h3 style="margin: 0; font-size: 1.1rem; color: #ffffff;">Receitas x Despesas</h3>
+                <span class="label-caps">Comparativo semestral</span>
+              </div>
+              <div style="display: flex; gap: 14px; font-size: 0.75rem;">
+                <span style="color: var(--accent);">● Receitas</span>
+                <span style="color: var(--danger);">● Despesas</span>
+              </div>
+            </div>
+            <div class="chart-canvas-wrapper" id="fin-line-wrapper">
+              <!-- Renderizado com SVG dinâmico -->
+            </div>
+          </div>
+
+          <!-- Card Despesas por tipo de gasto -->
+          <div class="card-dark">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+              <h3 style="margin: 0; font-size: 1.1rem; color: #ffffff;">Despesas por tipo de gasto</h3>
+              <span class="label-caps">Categorias ativas</span>
+            </div>
+            <div id="fin-despesas-categorias" style="display: flex; flex-direction: column; gap: 14px;">
+              <!-- Fixo, Variável, Impostos, Marketing, Operacional -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SEÇÃO NOVA: GASTOS PESSOAIS -->
+      <section id="section-gastos-pessoais" class="tab-content" style="display: none;">
+        <div class="top-header">
+          <div>
+            <h1 class="page-title">🏠 Gastos <span class="accent">Pessoais</span></h1>
+            <span class="label-caps">Gestão orçamentária pessoal, investimentos e reservas</span>
+          </div>
+          <div class="header-actions">
+            <button class="btn-secondary" onclick="exportGastosPessoaisPDF()"><span style="color: var(--accent);">📄</span> Exportar PDF</button>
+            <button class="btn-accent" onclick="openModal('modal-gasto')">+ Gasto</button>
+          </div>
+        </div>
+
+        <!-- Alerta informativo sobre patrimônio reservado vs consumo -->
+        <div class="alert-info-box">
+          <span style="font-size: 1.15rem;">💡</span>
+          <div>
+            <strong>Nota patrimonial:</strong> Lançamentos classificados como <span style="color: #34d399; font-weight: 700;">Dinheiro guardado</span> e <span style="color: var(--accent); font-weight: 700;">Investimento</span> representam capital reservado/acumulado e aparecem destacados em verde, não compondo o montante de gastos consumidos.
+          </div>
+        </div>
+
+        <!-- 4 KPIs de Gastos Pessoais -->
+        <div class="kpi-row">
+          <div class="kpi-card">
+            <span class="label-caps">Gasto do Mês</span>
+            <div class="kpi-val negative" id="gp-kpi-gasto">R$ 0,00</div>
+            <span style="font-size: 0.75rem; color: var(--danger);">Consumo & despesas ativas</span>
+          </div>
+          <div class="kpi-card">
+            <span class="label-caps">Investido no Mês</span>
+            <div class="kpi-val positive" id="gp-kpi-investido">R$ 0,00</div>
+            <span style="font-size: 0.75rem; color: var(--accent);">Aportes e ativos líquidos</span>
+          </div>
+          <div class="kpi-card">
+            <span class="label-caps">Guardado no Mês</span>
+            <div class="kpi-val positive" id="gp-kpi-guardado">R$ 0,00</div>
+            <span style="font-size: 0.75rem; color: #34d399;">Reserva de emergência</span>
+          </div>
+          <div class="kpi-card">
+            <span class="label-caps">Total de Lançamentos</span>
+            <div class="kpi-val" id="gp-kpi-total">0</div>
+            <span style="font-size: 0.75rem; color: #9ca3af;">Registros no mês atual</span>
+          </div>
+        </div>
+
+        <!-- Gráficos: Distribuição por Categoria + Gastos por Mês -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 24px; margin-bottom: 28px;">
+          <!-- Gráfico Donut: Distribuição por Categoria -->
+          <div class="card-dark">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <div>
+                <h3 style="margin: 0; font-size: 1.1rem; color: #ffffff;">Distribuição por categoria</h3>
+                <span class="label-caps">Proporção mensal</span>
+              </div>
+            </div>
+            <div class="chart-box" id="chart-gp-donut" style="height: 250px;"></div>
+          </div>
+
+          <!-- Gráfico Barras: Gastos Pessoais por Mês (Últimos 6 meses) -->
+          <div class="card-dark">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <div>
+                <h3 style="margin: 0; font-size: 1.1rem; color: #ffffff;">Gastos pessoais por mês</h3>
+                <span class="label-caps">Últimos 6 meses (consumo)</span>
+              </div>
+            </div>
+            <div class="chart-box" id="chart-gp-bar" style="height: 250px;"></div>
+          </div>
+        </div>
+
+        <!-- Card: Resumo por Categoria -->
+        <div class="card-dark" style="margin-bottom: 28px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0; font-size: 1.1rem; color: #ffffff;">Resumo por categoria</h3>
+            <span class="label-caps">Consolidação do mês corrente</span>
+          </div>
+          <div id="gp-resumo-categorias" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+            <!-- Renderizado dinamicamente -->
+          </div>
+        </div>
+
+        <!-- Tabela de Lançamentos de Gastos Pessoais -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <h3 style="margin: 0; font-size: 1.15rem; color: #ffffff;">Histórico de Lançamentos</h3>
+          <span class="label-caps" id="gp-table-count">0 registros</span>
+        </div>
+        <div class="table-container">
+          <table class="apex-table">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Descrição</th>
+                <th>Categoria</th>
+                <th>Valor</th>
+                <th style="text-align: right;">Ação</th>
+              </tr>
+            </thead>
+            <tbody id="gp-table-body">
+              <!-- Gerado via script -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SEÇÃO 3: CLIENTES -->
+      <section id="section-clientes" class="tab-content" style="display: none;">
+        <div class="top-header">
+          <div>
+            <h1 class="page-title">Gestão de <span class="accent">Clientes</span></h1>
+            <span class="label-caps">Base de clientes e contratos corporativos</span>
+          </div>
+          <div class="header-actions">
+            <button class="btn-accent" onclick="openModal('modal-cliente')">+ Cliente</button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="apex-table">
+            <thead>
+              <tr>
+                <th>Nome / Razão</th>
+                <th>E-mail</th>
+                <th>Telefone</th>
+                <th>CNPJ / CPF</th>
+                <th>Status</th>
+                <th style="text-align: right;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="clientes-table-body">
+              <!-- Gerado via script -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SEÇÃO 4: PROJETOS -->
+      <section id="section-projetos" class="tab-content" style="display: none;">
+        <div class="top-header">
+          <div>
+            <h1 class="page-title">Controle de <span class="accent">Projetos</span></h1>
+            <span class="label-caps">Acompanhamento de entregas e cronogramas</span>
+          </div>
+          <div class="header-actions">
+            <button class="btn-accent" onclick="openModal('modal-projeto')">+ Projeto</button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="apex-table">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Projeto</th>
+                <th>Status</th>
+                <th>Prazo</th>
+                <th style="width: 180px;">Progresso</th>
+                <th>Valor</th>
+              </tr>
+            </thead>
+            <tbody id="projetos-table-body">
+              <!-- Gerado via script -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SEÇÃO 5: RECIBOS -->
+      <section id="section-recibos" class="tab-content" style="display: none;">
+        <div class="top-header">
+          <div>
+            <h1 class="page-title">Emissão de <span class="accent">Recibos</span></h1>
+            <span class="label-caps">Comprovantes e liquidações de serviços</span>
+          </div>
+          <div class="header-actions">
+            <button class="btn-accent" onclick="openModal('modal-recibo')">+ Recibo</button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="apex-table">
+            <thead>
+              <tr>
+                <th>Nº Recibo</th>
+                <th>Cliente</th>
+                <th>Tipo</th>
+                <th>Data</th>
+                <th>Valor</th>
+                <th>Status</th>
+                <th style="text-align: right;">Documento</th>
+              </tr>
+            </thead>
+            <tbody id="recibos-table-body">
+              <!-- Gerado via script -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAL: NOVO CLIENTE -->
+  <div class="modal-overlay" id="modal-cliente">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Cadastrar Novo Cliente</h3>
+        <button class="modal-close" onclick="closeModal('modal-cliente')">&times;</button>
+      </div>
+      <form id="form-cliente" onsubmit="handleSalvarCliente(event)">
+        <div class="form-group">
+          <label class="label-caps">Nome ou Razão Social</label>
+          <input type="text" id="cli-nome" class="form-control" required placeholder="Ex: Inovatech Soluções Ltda">
+        </div>
+        <div class="form-group">
+          <label class="label-caps">E-mail Comercial</label>
+          <input type="email" id="cli-email" class="form-control" required placeholder="contato@empresa.com.br">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="label-caps">Telefone / WhatsApp</label>
+            <input type="text" id="cli-tel" class="form-control" required placeholder="(11) 98765-4321">
+          </div>
+          <div class="form-group">
+            <label class="label-caps">CNPJ / CPF</label>
+            <input type="text" id="cli-doc" class="form-control" required placeholder="00.000.000/0001-00">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="label-caps">Observações</label>
+          <textarea id="cli-obs" class="form-control" rows="2" placeholder="Notas sobre o contrato ou alinhamento..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('modal-cliente')">Cancelar</button>
+          <button type="submit" class="btn-accent">Salvar Cliente</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: NOVO PROJETO -->
+  <div class="modal-overlay" id="modal-projeto">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Cadastrar Novo Projeto</h3>
+        <button class="modal-close" onclick="closeModal('modal-projeto')">&times;</button>
+      </div>
+      <form id="form-projeto" onsubmit="handleSalvarProjeto(event)">
+        <div class="form-group">
+          <label class="label-caps">Cliente</label>
+          <select id="proj-cliente" class="form-control" required></select>
+        </div>
+        <div class="form-group">
+          <label class="label-caps">Nome do Projeto</label>
+          <input type="text" id="proj-nome" class="form-control" required placeholder="Ex: Redesign do Portal Web">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="label-caps">Status</label>
+            <select id="proj-status" class="form-control" required>
+              <option value="Orçamento">Orçamento</option>
+              <option value="Em andamento" selected>Em andamento</option>
+              <option value="Revisão">Revisão</option>
+              <option value="Concluído">Concluído</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="label-caps">Prazo de Entrega</label>
+            <input type="date" id="proj-prazo" class="form-control" required>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="label-caps">Progresso Atual (%)</label>
+            <input type="number" id="proj-progresso" min="0" max="100" class="form-control" value="25" required>
+          </div>
+          <div class="form-group">
+            <label class="label-caps">Valor Contratado (R$)</label>
+            <input type="number" step="0.01" id="proj-valor" class="form-control" placeholder="12500" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('modal-projeto')">Cancelar</button>
+          <button type="submit" class="btn-accent">Salvar Projeto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: NOVO GASTO PESSOAL -->
+  <div class="modal-overlay" id="modal-gasto">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>+ Novo Gasto Pessoal</h3>
+        <button class="modal-close" onclick="closeModal('modal-gasto')">&times;</button>
+      </div>
+      <form id="form-gasto" onsubmit="handleSalvarGasto(event)">
+        <div class="form-group">
+          <label class="label-caps">Data do Lançamento</label>
+          <input type="date" id="gasto-data" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="label-caps">Descrição</label>
+          <input type="text" id="gasto-desc" class="form-control" required placeholder="Ex: Supermercado mensal, Aporte Selic...">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="label-caps">Categoria</label>
+            <select id="gasto-cat" class="form-control" required>
+              <option value="Comida">Comida</option>
+              <option value="Lazer">Lazer</option>
+              <option value="Investimento">Investimento</option>
+              <option value="Dinheiro guardado">Dinheiro guardado</option>
+              <option value="Saúde">Saúde</option>
+              <option value="Transporte">Transporte</option>
+              <option value="Educação">Educação</option>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="label-caps">Valor (R$)</label>
+            <input type="number" step="0.01" id="gasto-valor" class="form-control" placeholder="150.00" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('modal-gasto')">Cancelar</button>
+          <button type="submit" class="btn-accent">Salvar Gasto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: NOVA DESPESA -->
+  <div class="modal-overlay" id="modal-despesa">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Lançar Nova Despesa</h3>
+        <button class="modal-close" onclick="closeModal('modal-despesa')">&times;</button>
+      </div>
+      <form id="form-despesa" onsubmit="handleSalvarDespesa(event)">
+        <div class="form-group">
+          <label class="label-caps">Descrição da Despesa</label>
+          <input type="text" id="desp-desc" class="form-control" required placeholder="Ex: Servidores em Nuvem AWS">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="label-caps">Categoria</label>
+            <select id="desp-cat" class="form-control" required>
+              <option value="Fixo">Fixo</option>
+              <option value="Variável">Variável</option>
+              <option value="Impostos">Impostos</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Operacional">Operacional</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="label-caps">Valor (R$)</label>
+            <input type="number" step="0.01" id="desp-valor" class="form-control" placeholder="1800" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="label-caps">Data do Lançamento</label>
+          <input type="date" id="desp-data" class="form-control" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('modal-despesa')">Cancelar</button>
+          <button type="submit" class="btn-accent">Registrar Despesa</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: NOVO RECIBO -->
+  <div class="modal-overlay" id="modal-recibo">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Emitir Novo Recibo</h3>
+        <button class="modal-close" onclick="closeModal('modal-recibo')">&times;</button>
+      </div>
+      <form id="form-recibo" onsubmit="handleSalvarRecibo(event)">
+        <div class="form-group">
+          <label class="label-caps">Cliente</label>
+          <select id="rec-cliente" class="form-control" required></select>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="label-caps">Tipo de Recibo</label>
+            <select id="rec-tipo" class="form-control" required>
+              <option value="Serviço">Serviço</option>
+              <option value="Produto">Produto</option>
+              <option value="Recorrente">Recorrente</option>
+              <option value="Avulso">Avulso</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="label-caps">Status</label>
+            <select id="rec-status" class="form-control" required>
+              <option value="Emitido">Emitido</option>
+              <option value="Pago">Pago</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="label-caps">Valor (R$)</label>
+            <input type="number" step="0.01" id="rec-valor" class="form-control" placeholder="4500" required>
+          </div>
+          <div class="form-group">
+            <label class="label-caps">Data de Emissão</label>
+            <input type="date" id="rec-data" class="form-control" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="label-caps">Descrição dos Serviços</label>
+          <textarea id="rec-desc" class="form-control" rows="2" placeholder="Detalhamento das entregas ou serviços faturados..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('modal-recibo')">Cancelar</button>
+          <button type="submit" class="btn-accent">Emitir Recibo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL DE VISUALIZAÇÃO / IMPRESSÃO (PDF) -->
+  <div class="modal-overlay" id="modal-print">
+    <div class="modal-box" style="max-width: 680px;">
+      <div class="modal-header no-print">
+        <h3 id="print-modal-title">Visualizar Documento</h3>
+        <button class="modal-close" onclick="closeModal('modal-print')">&times;</button>
+      </div>
+
+      <!-- Área de Impressão -->
+      <div id="print-area">
+        <div class="receipt-paper" id="print-content">
+          <!-- Conteúdo gerado dinamicamente -->
+        </div>
+      </div>
+
+      <div class="modal-footer no-print">
+        <button type="button" class="btn-secondary" onclick="closeModal('modal-print')">Fechar</button>
+        <button type="button" class="btn-accent" onclick="window.print()">🖨️ Imprimir / Salvar em PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * CONFIGURAÇÃO SUPABASE (Opcional / Produção)
+     * Para conectar a um projeto real Supabase com Google Auth:
+     * Substitua as constantes abaixo pela URL e ANON KEY do seu painel Supabase.
+     */
+    const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';
+    const SUPABASE_ANON_KEY = 'SUA_ANON_KEY';
+
+    const isSupabaseConfigured = () => {
+      return SUPABASE_URL && !SUPABASE_URL.includes('SEU-PROJETO') && SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.includes('SUA_ANON_KEY');
+    };
+
+    // Estado da Aplicação em Memória (com Mock inicial robusto em pt-BR)
+    const APP_STATE = {
+      user: null,
+      isDemo: true,
+      clientes: [
+        { id: '1', nome: 'Vanguard Engenharia Ltda', email: 'contato@vanguard.com.br', telefone: '(11) 98452-1100', documento: '12.345.678/0001-90', status: 'Ativo', obs: 'Contrato corporativo anual' },
+        { id: '2', nome: 'Nexus Pay Tecnologias', email: 'financeiro@nexuspay.io', telefone: '(21) 97120-4499', documento: '45.890.123/0001-44', status: 'Ativo', obs: 'Faturamento recorrente' },
+        { id: '3', nome: 'Studio Lumina Arquitetura', email: 'lumina@studio.art.br', telefone: '(31) 99312-8800', documento: '29.111.456/0001-22', status: 'Ativo', obs: 'Projetos sob demanda' },
+        { id: '4', nome: 'BioSaúde Diagnósticos', email: 'adm@biosaude.med.br', telefone: '(41) 98877-3344', documento: '08.777.654/0001-11', status: 'Inativo', obs: 'Contrato pausado em nov' },
+        { id: '5', nome: 'Logix Logística e Cargas', email: 'operacoes@logix.com.br', telefone: '(19) 97400-5566', documento: '33.444.555/0001-88', status: 'Ativo', obs: 'Automação de galpão' },
+        { id: '6', nome: 'Solaris Energia Sustentável', email: 'contato@solaris.eng.br', telefone: '(61) 99188-2211', documento: '18.999.333/0001-77', status: 'Ativo', obs: 'Plataforma IoT' }
+      ],
+      projetos: [
+        { id: '1', cliente: 'Nexus Pay Tecnologias', nome: 'Gateway de Pagamentos V2', status: 'Em andamento', prazo: '2025-04-15', progresso: 75, valor: 38500 },
+        { id: '2', cliente: 'Vanguard Engenharia Ltda', nome: 'Dashboard BIM & Obras', status: 'Em andamento', prazo: '2025-05-10', progresso: 45, valor: 54000 },
+        { id: '3', cliente: 'Solaris Energia Sustentável', nome: 'Telemetria de Inversores', status: 'Revisão', prazo: '2025-03-28', progresso: 90, valor: 28000 },
+        { id: '4', cliente: 'Studio Lumina Arquitetura', nome: 'Portal de Realidade Virtual', status: 'Concluído', prazo: '2025-02-20', progresso: 100, valor: 19500 },
+        { id: '5', cliente: 'Logix Logística e Cargas', nome: 'Roteirizador de Frotas', status: 'Orçamento', prazo: '2025-06-01', progresso: 10, valor: 42000 }
+      ],
+      despesas: [
+        { id: '1', descricao: 'Infraestrutura Cloud & Servidores', categoria: 'Operacional', valor: 3450, data: '2025-03-02' },
+        { id: '2', descricao: 'Aluguel Escritório & Coworking', categoria: 'Fixo', valor: 4200, data: '2025-03-05' },
+        { id: '3', descricao: 'Campanhas Google Ads & Meta', categoria: 'Marketing', valor: 2800, data: '2025-03-08' },
+        { id: '4', descricao: 'Simples Nacional / DAS', categoria: 'Impostos', valor: 5900, data: '2025-03-10' },
+        { id: '5', descricao: 'Licenças de Softwares & Figma', categoria: 'Variável', valor: 1350, data: '2025-03-12' },
+        { id: '6', descricao: 'Honorários Contabilidade', categoria: 'Fixo', valor: 1500, data: '2025-03-14' }
+      ],
+      recibos: [
+        { id: 'REC-001092', cliente: 'Nexus Pay Tecnologias', tipo: 'Serviço', data: '2025-03-05', valor: 18500, status: 'Pago', descricao: 'Desenvolvimento sprint 1 do Gateway' },
+        { id: 'REC-001093', cliente: 'Vanguard Engenharia Ltda', tipo: 'Recorrente', data: '2025-03-08', valor: 14000, status: 'Pago', descricao: 'Mensalidade de suporte e infraestrutura' },
+        { id: 'REC-001094', cliente: 'Studio Lumina Arquitetura', tipo: 'Serviço', data: '2025-03-10', valor: 9500, status: 'Pago', descricao: 'Entrega final da plataforma de Realidade Virtual' },
+        { id: 'REC-001095', cliente: 'Solaris Energia Sustentável', tipo: 'Serviço', data: '2025-03-12', valor: 15000, status: 'Emitido', descricao: 'Etapa 2 - Módulo de telemetria' },
+        { id: 'REC-001096', cliente: 'Logix Logística e Cargas', tipo: 'Avulso', data: '2025-03-14', valor: 6200, status: 'Emitido', descricao: 'Consultoria de arquitetura de dados' },
+        { id: 'REC-001097', cliente: 'BioSaúde Diagnósticos', tipo: 'Produto', data: '2025-02-18', valor: 7800, status: 'Cancelado', descricao: 'Licença cancelada por reestruturação' },
+        { id: 'REC-001098', cliente: 'Nexus Pay Tecnologias', tipo: 'Recorrente', data: '2025-02-05', valor: 18500, status: 'Pago', descricao: 'Mensalidade consultoria dev' },
+        { id: 'REC-001099', cliente: 'Vanguard Engenharia Ltda', tipo: 'Recorrente', data: '2025-02-10', valor: 14000, status: 'Pago', descricao: 'Mensalidade de infraestrutura' }
+      ],
+      gastosPessoais: [
+        { id: 'gp-1', data: '2025-03-14', descricao: 'Supermercado Mensal Pão de Açúcar', categoria: 'Comida', valor: 1280.50 },
+        { id: 'gp-2', data: '2025-03-12', descricao: 'Aporte Tesouro IPCA+ 2035', categoria: 'Investimento', valor: 2500.00 },
+        { id: 'gp-3', data: '2025-03-10', descricao: 'Reserva de Emergência Caixinha', categoria: 'Dinheiro guardado', valor: 1200.00 },
+        { id: 'gp-4', data: '2025-03-09', descricao: 'Jantar Família Restaurante', categoria: 'Lazer', valor: 380.00 },
+        { id: 'gp-5', data: '2025-03-07', descricao: 'Combustível Posto Shell', categoria: 'Transporte', valor: 240.00 },
+        { id: 'gp-6', data: '2025-03-05', descricao: 'Consulta Médica Oftalmologia', categoria: 'Saúde', valor: 350.00 },
+        { id: 'gp-7', data: '2025-03-04', descricao: 'Assinatura Plataforma de Cursos', categoria: 'Educação', valor: 189.90 },
+        { id: 'gp-8', data: '2025-03-02', descricao: 'Farmácia e Suplementação', categoria: 'Saúde', valor: 215.40 },
+        { id: 'gp-9', data: '2025-02-25', descricao: 'Aporte Ações Dividendos', categoria: 'Investimento', valor: 2200.00 },
+        { id: 'gp-10', data: '2025-02-20', descricao: 'Compras Hortifruti e Mercado', categoria: 'Comida', valor: 940.00 },
+        { id: 'gp-11', data: '2025-02-15', descricao: 'Depósito Reserva de Oportunidade', categoria: 'Dinheiro guardado', valor: 1500.00 },
+        { id: 'gp-12', data: '2025-02-08', descricao: 'Ingressos Concerto e Passeio', categoria: 'Lazer', valor: 290.00 },
+        { id: 'gp-13', data: '2025-01-22', descricao: 'Manutenção Veículo e Óleo', categoria: 'Transporte', valor: 480.00 },
+        { id: 'gp-14', data: '2025-01-14', descricao: 'Livros de Tecnologia & Gestão', categoria: 'Educação', valor: 210.00 }
+      ]
+    };
+
+    // Auxiliares de Formatação pt-BR
+    const fmtBrl = (v) => {
+      if (window.skipShell && window.skipShell.fmt) {
+        return window.skipShell.fmt.brl(v);
+      }
+      return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    };
+
+    const fmtDataPt = (iso) => {
+      if (!iso) return '-';
+      const parts = iso.split('-');
+      if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      return iso;
+    };
+
+    // Inicialização ao carregar o documento
+    document.addEventListener('DOMContentLoaded', () => {
+      setupAuthListeners();
+      setupNavigation();
+      setupDateInputs();
+      setupModalOverlayClicks();
+      setupMobileSidebar();
+    });
+
+    function setupDateInputs() {
+      const today = new Date().toISOString().split('T')[0];
+      const prazoEl = document.getElementById('proj-prazo');
+      const despEl = document.getElementById('desp-data');
+      const recEl = document.getElementById('rec-data');
+      const gpEl = document.getElementById('gasto-data');
+      if (prazoEl) prazoEl.value = today;
+      if (despEl) despEl.value = today;
+      if (recEl) recEl.value = today;
+      if (gpEl) gpEl.value = today;
+    }
+
+    // Gerenciamento de Autenticação / Demo
+    function setupAuthListeners() {
+      const btnDemo = document.getElementById('btn-demo-login');
+      const btnGoogle = document.getElementById('btn-google-login');
+      const btnLogout = document.getElementById('btn-logout');
+
+      btnDemo.addEventListener('click', () => {
+        enterApp({
+          name: 'Gestor Apexel',
+          email: 'admin@apexel.com.br',
+          isDemo: true
+        });
+      });
+
+      btnGoogle.addEventListener('click', () => {
+        if (!isSupabaseConfigured()) {
+          // Fallback gracioso com aviso e login demo
+          alert('Configuração do Supabase pendente (URL/Key padrão). Entrando automaticamente em modo demonstração.');
+          enterApp({
+            name: 'Usuário Google (Demo)',
+            email: 'usuario.google@apexel.com.br',
+            isDemo: true
+          });
+        } else {
+          // Se as credenciais estiverem preenchidas pelo integrador:
+          // window.supabase.auth.signInWithOAuth({ provider: 'google' });
+        }
+      });
+
+      btnLogout.addEventListener('click', () => {
+        APP_STATE.user = null;
+        document.getElementById('app-screen').classList.remove('active');
+        document.getElementById('login-screen').style.display = 'flex';
+      });
+    }
+
+    function enterApp(user) {
+      APP_STATE.user = user;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app-screen').classList.add('active');
+
+      document.getElementById('sidebar-user-name').textContent = user.name;
+      document.getElementById('sidebar-user-email').textContent = user.email;
+      document.getElementById('sidebar-avatar').textContent = user.name.charAt(0).toUpperCase();
+
+      populateSelectClients();
+      renderAll();
+    }
+
+    // Navegação em Abas da Sidebar
+    function setupNavigation() {
+      const navItems = document.querySelectorAll('.nav-item');
+      navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          navItems.forEach(n => n.classList.remove('active'));
+          item.classList.add('active');
+
+          const targetTab = item.getAttribute('data-tab');
+          document.querySelectorAll('.tab-content').forEach(sec => {
+            sec.style.display = 'none';
+          });
+          const activeSec = document.getElementById(`section-${targetTab}`);
+          if (activeSec) {
+            activeSec.style.display = 'block';
+          }
+
+          // Fechar sidebar mobile ao navegar
+          const sidebar = document.getElementById('app-sidebar');
+          if (sidebar) sidebar.classList.remove('mobile-open');
+
+          renderAll();
+        });
+      });
+    }
+
+    function setupMobileSidebar() {
+      const toggle = document.getElementById('mobile-toggle');
+      const sidebar = document.getElementById('app-sidebar');
+      if (toggle && sidebar) {
+        toggle.addEventListener('click', () => {
+          sidebar.classList.toggle('mobile-open');
+        });
+      }
+    }
+
+    function setupModalOverlayClicks() {
+      document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) {
+            overlay.classList.remove('open');
+          }
+        });
+      });
+    }
+
+    // Modal Helpers
+    function openModal(id) {
+      populateSelectClients();
+      const el = document.getElementById(id);
+      if (el) el.classList.add('open');
+    }
+
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('open');
+    }
+
+    function populateSelectClients() {
+      const pSel = document.getElementById('proj-cliente');
+      const rSel = document.getElementById('rec-cliente');
+      if (!pSel || !rSel) return;
+
+      const opts = APP_STATE.clientes
+        .filter(c => c.status === 'Ativo')
+        .map(c => `<option value="${c.nome}">${c.nome}</option>`)
+        .join('');
+
+      pSel.innerHTML = opts || '<option value="">Nenhum cliente ativo</option>';
+      rSel.innerHTML = opts || '<option value="">Nenhum cliente ativo</option>';
+    }
+
+    // RENDERIZAÇÃO COMPLETA
+    function renderAll() {
+      renderVisaoGeral();
+      renderFinanceiro();
+      renderGastosPessoais();
+      renderClientes();
+      renderProjetos();
+      renderRecibos();
+    }
+
+    // 1. VISÃO GERAL
+    function renderVisaoGeral() {
+      const clientesAtivos = APP_STATE.clientes.filter(c => c.status === 'Ativo').length;
+      const projAndamento = APP_STATE.projetos.filter(p => p.status === 'Em andamento').length;
+      const projConcluidos = APP_STATE.projetos.filter(p => p.status === 'Concluído').length;
+
+      // Recibos pagos de março (mês corrente)
+      const receitaMes = APP_STATE.recibos
+        .filter(r => r.status === 'Pago' && r.data.startsWith('2025-03'))
+        .reduce((sum, r) => sum + r.valor, 0);
+
+      // Recibos emitidos/a receber
+      const valorAReceber = APP_STATE.recibos
+        .filter(r => r.status === 'Emitido')
+        .reduce((sum, r) => sum + r.valor, 0);
+
+      document.getElementById('vg-kpi-clientes').textContent = clientesAtivos;
+      document.getElementById('vg-kpi-projetos').textContent = projAndamento;
+      document.getElementById('vg-kpi-concluidos').textContent = projConcluidos;
+      document.getElementById('vg-kpi-receita').textContent = fmtBrl(receitaMes);
+      document.getElementById('vg-kpi-areceber').textContent = fmtBrl(valorAReceber);
+
+      // Lista Projetos em Andamento
+      const containerProjetos = document.getElementById('vg-projects-list');
+      const emAndamentoList = APP_STATE.projetos.filter(p => p.status === 'Em andamento');
+
+      if (emAndamentoList.length === 0) {
+        containerProjetos.innerHTML = '<div style="color: #6b7280; font-size: 0.85rem;">Nenhum projeto em andamento.</div>';
+      } else {
+        containerProjetos.innerHTML = emAndamentoList.map(p => `
+          <div style="background: var(--surface-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+              <strong style="color: #ffffff; font-size: 0.95rem;">${p.nome}</strong>
+              <span style="color: var(--accent); font-weight: 700; font-size: 0.85rem;">${p.progresso}%</span>
+            </div>
+            <div style="font-size: 0.78rem; color: #9ca3af; margin-bottom: 8px;">${p.cliente} • Prazo: ${fmtDataPt(p.prazo)}</div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width: ${p.progresso}%;"></div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Gráfico de Barras: Receita por mês (usando window.skipChart.bar)
+      const chartBox = document.getElementById('chart-receita-mes');
+      if (chartBox && window.skipChart && window.skipChart.bar) {
+        chartBox.innerHTML = '';
+        window.skipChart.bar(chartBox, {
+          labels: ['Out', 'Nov', 'Dez', 'Jan', 'Fev', 'Mar'],
+          values: [28400, 32100, 41200, 36000, 32500, receitaMes || 42000],
+          color: '#BFFF3C',
+          format: 'brl'
+        });
+      }
+    }
+
+    // 2. FINANCEIRO
+    function renderFinanceiro() {
+      const faturamento = APP_STATE.recibos
+        .filter(r => r.status === 'Pago' && r.data.startsWith('2025-03'))
+        .reduce((s, r) => s + r.valor, 0);
+
+      const pendentes = APP_STATE.recibos
+        .filter(r => r.status === 'Emitido')
+        .reduce((s, r) => s + r.valor, 0);
+
+      const totalDespesas = APP_STATE.despesas
+        .filter(d => d.data.startsWith('2025-03'))
+        .reduce((s, d) => s + d.valor, 0);
+
+      const lucro = faturamento - totalDespesas;
+
+      document.getElementById('fin-kpi-faturamento').textContent = fmtBrl(faturamento);
+      document.getElementById('fin-kpi-pendentes').textContent = fmtBrl(pendentes);
+      document.getElementById('fin-kpi-despesas').textContent = fmtBrl(totalDespesas);
+
+      const lucroEl = document.getElementById('fin-kpi-lucro');
+      lucroEl.textContent = fmtBrl(lucro);
+      lucroEl.className = `kpi-val ${lucro >= 0 ? 'positive' : 'negative'}`;
+
+      // Despesas por Categoria (Fixo, Variável, Impostos, Marketing, Operacional)
+      const categorias = ['Fixo', 'Variável', 'Impostos', 'Marketing', 'Operacional'];
+      const catTotals = {};
+      categorias.forEach(c => catTotals[c] = 0);
+      APP_STATE.despesas.forEach(d => {
+        if (catTotals[d.categoria] !== undefined) {
+          catTotals[d.categoria] += d.valor;
+        }
+      });
+
+      const catContainer = document.getElementById('fin-despesas-categorias');
+      const maxVal = Math.max(...Object.values(catTotals), 1);
+
+      catContainer.innerHTML = categorias.map(cat => {
+        const val = catTotals[cat];
+        const pct = Math.round((val / maxVal) * 100);
+        return `
+          <div style="background: var(--surface-elevated); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-weight: 600; color: #ffffff; font-size: 0.88rem;">${cat}</span>
+              <span style="color: var(--danger); font-weight: 700; font-size: 0.88rem;">${fmtBrl(val)}</span>
+            </div>
+            <div class="progress-bar-bg" style="background: #232328;">
+              <div class="progress-bar-fill" style="width: ${pct}%; background: var(--danger); box-shadow: 0 0 6px rgba(255,92,92,0.4);"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      renderFinanceLineChart();
+    }
+
+    // Gráfico SVG Personalizado Comparativo Receitas x Despesas
+    function renderFinanceLineChart() {
+      const container = document.getElementById('fin-line-wrapper');
+      if (!container) return;
+
+      const labels = ['Out', 'Nov', 'Dez', 'Jan', 'Fev', 'Mar'];
+      const receitas = [28400, 32100, 41200, 36000, 32500, 42000];
+      const despesas = [14200, 15800, 19400, 17200, 16100, 19200];
+
+      const max = Math.max(...receitas, ...despesas) * 1.15;
+      const w = 500;
+      const h = 220;
+      const padL = 40;
+      const padR = 20;
+      const padT = 20;
+      const padB = 30;
+
+      const getX = (i) => padL + (i * ((w - padL - padR) / (labels.length - 1)));
+      const getY = (val) => h - padB - ((val / max) * (h - padT - padB));
+
+      const pointsRec = receitas.map((v, i) => `${getX(i)},${getY(v)}`).join(' ');
+      const pointsDesp = despesas.map((v, i) => `${getX(i)},${getY(v)}`).join(' ');
+
+      // Área sombreada receitas
+      const areaRec = `${getX(0)},${h - padB} ${pointsRec} ${getX(labels.length - 1)},${h - padB}`;
+      // Área sombreada despesas
+      const areaDesp = `${getX(0)},${h - padB} ${pointsDesp} ${getX(labels.length - 1)},${h - padB}`;
+
+      let svg = `
+        <svg viewBox="0 0 ${w} ${h}" class="apex-line-chart" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="recGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#BFFF3C" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#BFFF3C" stop-opacity="0.0"/>
+            </linearGradient>
+            <linearGradient id="despGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ff5c5c" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#ff5c5c" stop-opacity="0.0"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Linhas de grade horizontal -->
+          <line x1="${padL}" y1="${getY(0)}" x2="${w - padR}" y2="${getY(0)}" stroke="#232328" stroke-width="1"/>
+          <line x1="${padL}" y1="${getY(max * 0.33)}" x2="${w - padR}" y2="${getY(max * 0.33)}" stroke="#232328" stroke-dasharray="3,3" stroke-width="1"/>
+          <line x1="${padL}" y1="${getY(max * 0.66)}" x2="${w - padR}" y2="${getY(max * 0.66)}" stroke="#232328" stroke-dasharray="3,3" stroke-width="1"/>
+
+          <!-- Áreas preenchidas translúcidas -->
+          <polygon points="${areaRec}" fill="url(#recGrad)" />
+          <polygon points="${areaDesp}" fill="url(#despGrad)" />
+
+          <!-- Linha Receitas (Verde) -->
+          <polyline points="${pointsRec}" fill="none" stroke="#BFFF3C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Linha Despesas (Vermelho) -->
+          <polyline points="${pointsDesp}" fill="none" stroke="#ff5c5c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- Pontos e Rótulos -->
+      `;
+
+      receitas.forEach((v, i) => {
+        svg += `
+          <circle cx="${getX(i)}" cy="${getY(v)}" r="4.5" fill="#000000" stroke="#BFFF3C" stroke-width="2"/>
+          <circle cx="${getX(i)}" cy="${getY(despesas[i])}" r="4" fill="#000000" stroke="#ff5c5c" stroke-width="2"/>
+          <text x="${getX(i)}" y="${h - 8}" fill="#9ca3af" font-size="11" text-anchor="middle" font-family="sans-serif">${labels[i]}</text>
+        `;
+      });
+
+      svg += `</svg>`;
+      container.innerHTML = svg;
+    }
+
+    // SEÇÃO GASTOS PESSOAIS
+    const GP_CATEGORIAS = [
+      { name: 'Comida', badgeClass: 'badge-cat-comida', color: '#f59e0b', isAsset: false },
+      { name: 'Lazer', badgeClass: 'badge-cat-lazer', color: '#38bdf8', isAsset: false },
+      { name: 'Investimento', badgeClass: 'badge-cat-investimento', color: '#BFFF3C', isAsset: true },
+      { name: 'Dinheiro guardado', badgeClass: 'badge-cat-guardado', color: '#34d399', isAsset: true },
+      { name: 'Saúde', badgeClass: 'badge-cat-saude', color: '#fb7185', isAsset: false },
+      { name: 'Transporte', badgeClass: 'badge-cat-transporte', color: '#c084fc', isAsset: false },
+      { name: 'Educação', badgeClass: 'badge-cat-educacao', color: '#22d3ee', isAsset: false },
+      { name: 'Outros', badgeClass: 'badge-cat-outros', color: '#9ca3af', isAsset: false }
+    ];
+
+    function getGpCategoryInfo(catName) {
+      return GP_CATEGORIAS.find(c => c.name.toLowerCase() === (catName || '').toLowerCase()) || {
+        name: catName,
+        badgeClass: 'badge-cat-outros',
+        color: '#9ca3af',
+        isAsset: false
+      };
+    }
+
+    function renderGastosPessoais() {
+      const currentMonthPrefix = '2025-03';
+      const itensMes = APP_STATE.gastosPessoais.filter(g => g.data.startsWith(currentMonthPrefix));
+
+      // Cálculo dos 4 KPIs:
+      // Gasto do mês: apenas categorias consumidas (exclui Investimento e Dinheiro guardado)
+      const gastoConsumo = itensMes
+        .filter(g => g.categoria !== 'Investimento' && g.categoria !== 'Dinheiro guardado')
+        .reduce((sum, g) => sum + g.valor, 0);
+
+      const totalInvestido = itensMes
+        .filter(g => g.categoria === 'Investimento')
+        .reduce((sum, g) => sum + g.valor, 0);
+
+      const totalGuardado = itensMes
+        .filter(g => g.categoria === 'Dinheiro guardado')
+        .reduce((sum, g) => sum + g.valor, 0);
+
+      const totalLancamentos = itensMes.length;
+
+      document.getElementById('gp-kpi-gasto').textContent = fmtBrl(gastoConsumo);
+      document.getElementById('gp-kpi-investido').textContent = fmtBrl(totalInvestido);
+      document.getElementById('gp-kpi-guardado').textContent = fmtBrl(totalGuardado);
+      document.getElementById('gp-kpi-total').textContent = totalLancamentos;
+
+      // Resumo por categoria e Donut Chart
+      const catTotals = {};
+      GP_CATEGORIAS.forEach(c => { catTotals[c.name] = 0; });
+      itensMes.forEach(g => {
+        if (catTotals[g.categoria] !== undefined) {
+          catTotals[g.categoria] += g.valor;
+        } else {
+          catTotals['Outros'] = (catTotals['Outros'] || 0) + g.valor;
+        }
+      });
+
+      const totalMovimentadoMes = itensMes.reduce((sum, g) => sum + g.valor, 0) || 1;
+
+      // Render resumo por categoria (cards com barrinha)
+      const resumoContainer = document.getElementById('gp-resumo-categorias');
+      resumoContainer.innerHTML = GP_CATEGORIAS.map(cat => {
+        const val = catTotals[cat.name] || 0;
+        const pct = Math.round((val / totalMovimentadoMes) * 100);
+        return `
+          <div style="background: var(--surface-elevated); padding: 14px 18px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span class="badge-pill ${cat.badgeClass}">${cat.name}</span>
+              <strong style="color: ${cat.isAsset ? '#BFFF3C' : '#ffffff'}; font-size: 0.92rem;">${fmtBrl(val)}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #9ca3af; margin-top: 4px;">
+              <span>Participação no mês</span>
+              <span style="font-weight: 700; color: ${cat.isAsset ? '#BFFF3C' : '#d1d5db'};">${pct}%</span>
+            </div>
+            <div class="progress-bar-bg" style="background: #232328; height: 6px; margin-top: 6px;">
+              <div class="progress-bar-fill" style="width: ${pct}%; background: ${cat.color}; box-shadow: 0 0 6px ${cat.color}66;"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Gráfico Donut de Distribuição por Categoria
+      const donutBox = document.getElementById('chart-gp-donut');
+      if (donutBox && window.skipChart && window.skipChart.donut) {
+        donutBox.innerHTML = '';
+        const donutLabels = [];
+        const donutValues = [];
+        const donutColors = [];
+
+        GP_CATEGORIAS.forEach(cat => {
+          const val = catTotals[cat.name];
+          if (val > 0) {
+            donutLabels.push(cat.name);
+            donutValues.push(val);
+            donutColors.push(cat.color);
+          }
+        });
+
+        if (donutValues.length === 0) {
+          donutLabels.push('Sem gastos');
+          donutValues.push(1);
+          donutColors.push('#374151');
+        }
+
+        window.skipChart.donut(donutBox, {
+          labels: donutLabels,
+          values: donutValues,
+          colors: donutColors
+        });
+      }
+
+      // Gráfico de Barras: Gastos pessoais por mês (últimos 6 meses)
+      const barBox = document.getElementById('chart-gp-bar');
+      if (barBox && window.skipChart && window.skipChart.bar) {
+        barBox.innerHTML = '';
+        const meses = [
+          { key: '2024-10', label: 'Out' },
+          { key: '2024-11', label: 'Nov' },
+          { key: '2024-12', label: 'Dez' },
+          { key: '2025-01', label: 'Jan' },
+          { key: '2025-02', label: 'Fev' },
+          { key: '2025-03', label: 'Mar' }
+        ];
+
+        // Valores calculados com base nos lançamentos (ou histórico realista proporcional)
+        const histValores = {
+          '2024-10': 2150,
+          '2024-11': 2340,
+          '2024-12': 3100,
+          '2025-01': 1980,
+          '2025-02': 1850,
+          '2025-03': gastoConsumo || 2655.80
+        };
+
+        window.skipChart.bar(barBox, {
+          labels: meses.map(m => m.label),
+          values: meses.map(m => histValores[m.key]),
+          color: '#BFFF3C',
+          format: 'brl'
+        });
+      }
+
+      // Tabela de lançamentos
+      renderGpTabela();
+    }
+
+    function renderGpTabela() {
+      const tbody = document.getElementById('gp-table-body');
+      const countEl = document.getElementById('gp-table-count');
+      const lista = APP_STATE.gastosPessoais;
+
+      if (countEl) countEl.textContent = `${lista.length} lançamento(s)`;
+
+      if (lista.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #6b7280; padding: 24px;">Nenhum gasto pessoal registrado.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = lista.map(g => {
+        const catInfo = getGpCategoryInfo(g.categoria);
+        return `
+          <tr>
+            <td style="color: #9ca3af; font-size: 0.84rem;">${fmtDataPt(g.data)}</td>
+            <td><strong style="color: #ffffff;">${g.descricao}</strong></td>
+            <td><span class="badge-pill ${catInfo.badgeClass}">● ${g.categoria}</span></td>
+            <td>
+              <strong style="color: ${catInfo.isAsset ? '#BFFF3C' : '#ff7a7a'};">
+                ${fmtBrl(g.valor)}
+              </strong>
+            </td>
+            <td style="text-align: right;">
+              <button class="btn-secondary btn-sm" style="color: var(--danger); border-color: rgba(255,92,92,0.3);" onclick="excluirGasto('${g.id}')">
+                Excluir
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function handleSalvarGasto(e) {
+      e.preventDefault();
+      const data = document.getElementById('gasto-data').value;
+      const descricao = document.getElementById('gasto-desc').value.trim();
+      const categoria = document.getElementById('gasto-cat').value;
+      const valor = parseFloat(document.getElementById('gasto-valor').value) || 0;
+
+      if (!descricao || !valor) return;
+
+      const newGasto = {
+        id: 'gp-' + Date.now(),
+        data,
+        descricao,
+        categoria,
+        valor
+      };
+
+      // Se Supabase estiver configurado e ativo
+      if (isSupabaseConfigured() && window.supabase) {
+        try {
+          await window.supabase.from('gastos_pessoais').insert([{
+            user_id: APP_STATE.user?.email || 'demo_user',
+            data,
+            descricao,
+            categoria,
+            valor,
+            created_at: new Date().toISOString()
+          }]);
+        } catch (err) {
+          console.warn('Erro ao sincronizar com Supabase:', err);
+        }
+      }
+
+      APP_STATE.gastosPessoais.unshift(newGasto);
+      e.target.reset();
+      setupDateInputs();
+      closeModal('modal-gasto');
+      renderGastosPessoais();
+    }
+
+    async function excluirGasto(id) {
+      if (!confirm('Deseja realmente excluir este lançamento?')) return;
+
+      if (isSupabaseConfigured() && window.supabase) {
+        try {
+          await window.supabase.from('gastos_pessoais').delete().eq('id', id);
+        } catch (err) {
+          console.warn('Erro ao excluir no Supabase:', err);
+        }
+      }
+
+      APP_STATE.gastosPessoais = APP_STATE.gastosPessoais.filter(g => g.id !== id);
+      renderGastosPessoais();
+    }
+
+    function exportGastosPessoaisPDF() {
+      const currentMonthPrefix = '2025-03';
+      const itensMes = APP_STATE.gastosPessoais.filter(g => g.data.startsWith(currentMonthPrefix));
+
+      const gastoConsumo = itensMes
+        .filter(g => g.categoria !== 'Investimento' && g.categoria !== 'Dinheiro guardado')
+        .reduce((sum, g) => sum + g.valor, 0);
+
+      const totalInvestido = itensMes
+        .filter(g => g.categoria === 'Investimento')
+        .reduce((sum, g) => sum + g.valor, 0);
+
+      const totalGuardado = itensMes
+        .filter(g => g.categoria === 'Dinheiro guardado')
+        .reduce((sum, g) => sum + g.valor, 0);
+
+      const totalMovimentado = itensMes.reduce((sum, g) => sum + g.valor, 0);
+
+      // Resumo de categorias
+      const catTotals = {};
+      itensMes.forEach(g => {
+        catTotals[g.categoria] = (catTotals[g.categoria] || 0) + g.valor;
+      });
+
+      const container = document.getElementById('print-content');
+      document.getElementById('print-modal-title').textContent = 'Relatório de Gastos Pessoais — 2025-03';
+
+      container.innerHTML = `
+        <div class="receipt-header-black">
+          <div>
+            <div style="font-size: 1.4rem; font-weight: 800; letter-spacing: 0.18em; color: #ffffff;">
+              APEXEL<span style="color: var(--accent);">.</span>
+            </div>
+            <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af;">
+              Relatório Individual de Gestão Patrimonial
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 1.1rem; font-weight: 800; color: var(--accent);">Gastos Pessoais — 2025-03</div>
+            <div style="font-size: 0.75rem; color: #d1d5db;">Emissão: ${new Date().toLocaleDateString('pt-BR')}</div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px;">
+          <div style="background: #f9fafb; padding: 10px; border-radius: 8px; border: 1px solid #e5e7eb;">
+            <div class="label-caps" style="color: #6b7280; font-size: 0.65rem;">Gasto Consumido</div>
+            <div style="font-size: 1.05rem; font-weight: 800; color: #dc2626; margin-top: 4px;">${fmtBrl(gastoConsumo)}</div>
+          </div>
+          <div style="background: #f9fafb; padding: 10px; border-radius: 8px; border: 1px solid #e5e7eb;">
+            <div class="label-caps" style="color: #6b7280; font-size: 0.65rem;">Investido</div>
+            <div style="font-size: 1.05rem; font-weight: 800; color: #16a34a; margin-top: 4px;">${fmtBrl(totalInvestido)}</div>
+          </div>
+          <div style="background: #f9fafb; padding: 10px; border-radius: 8px; border: 1px solid #e5e7eb;">
+            <div class="label-caps" style="color: #6b7280; font-size: 0.65rem;">Guardado</div>
+            <div style="font-size: 1.05rem; font-weight: 800; color: #059669; margin-top: 4px;">${fmtBrl(totalGuardado)}</div>
+          </div>
+          <div style="background: #000000; padding: 10px; border-radius: 8px;">
+            <div class="label-caps" style="color: #9ca3af; font-size: 0.65rem;">Total Movimentado</div>
+            <div style="font-size: 1.05rem; font-weight: 800; color: var(--accent); margin-top: 4px;">${fmtBrl(totalMovimentado)}</div>
+          </div>
+        </div>
+
+        <h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: #111827; text-transform: uppercase; letter-spacing: 0.05em;">
+          Resumo por Categoria
+        </h4>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 24px;">
+          ${Object.entries(catTotals).map(([cat, val]) => `
+            <div style="background: #f3f4f6; padding: 8px 12px; border-radius: 6px; display: flex; justify-content: space-between; font-size: 0.8rem;">
+              <span style="font-weight: 600; color: #374151;">${cat}</span>
+              <strong style="color: #111827;">${fmtBrl(val)} (${Math.round((val / totalMovimentado) * 100)}%)</strong>
+            </div>
+          `).join('')}
+        </div>
+
+        <h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: #111827; text-transform: uppercase; letter-spacing: 0.05em;">
+          Lançamentos Detalhados do Mês
+        </h4>
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-bottom: 20px;">
+          <thead>
+            <tr style="background: #f3f4f6; text-align: left;">
+              <th style="padding: 8px;">Data</th>
+              <th style="padding: 8px;">Descrição</th>
+              <th style="padding: 8px;">Categoria</th>
+              <th style="padding: 8px; text-align: right;">Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itensMes.map(g => `
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 8px; color: #4b5563;">${fmtDataPt(g.data)}</td>
+                <td style="padding: 8px; font-weight: 600; color: #111827;">${g.descricao}</td>
+                <td style="padding: 8px;">${g.categoria}</td>
+                <td style="padding: 8px; text-align: right; font-weight: 700; color: ${g.categoria === 'Investimento' || g.categoria === 'Dinheiro guardado' ? '#16a34a' : '#dc2626'};">${fmtBrl(g.valor)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <div style="margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 12px; font-size: 0.72rem; color: #6b7280; display: flex; justify-content: space-between;">
+          <span>Arquivo: gastos-pessoais-2025-03.pdf</span>
+          <span>APEXEL Personal Finance & Assets</span>
+        </div>
+      `;
+
+      openModal('modal-print');
+    }
+
+    // 3. CLIENTES
+    function renderClientes() {
+      const tbody = document.getElementById('clientes-table-body');
+      tbody.innerHTML = APP_STATE.clientes.map(c => `
+        <tr>
+          <td><strong style="color: #ffffff;">${c.nome}</strong></td>
+          <td style="color: #9ca3af;">${c.email}</td>
+          <td>${c.telefone}</td>
+          <td style="font-family: monospace; font-size: 0.85rem;">${c.documento}</td>
+          <td>
+            <span class="badge-pill ${c.status === 'Ativo' ? 'status-green' : 'status-gray'}">
+              ● ${c.status}
+            </span>
+          </td>
+          <td style="text-align: right;">
+            <button class="btn-secondary btn-sm" onclick="toggleStatusCliente('${c.id}')">
+              ${c.status === 'Ativo' ? 'Desativar' : 'Ativar'}
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function toggleStatusCliente(id) {
+      const cli = APP_STATE.clientes.find(c => c.id === id);
+      if (cli) {
+        cli.status = cli.status === 'Ativo' ? 'Inativo' : 'Ativo';
+        renderAll();
+      }
+    }
+
+    // 4. PROJETOS
+    function renderProjetos() {
+      const tbody = document.getElementById('projetos-table-body');
+
+      const getStatusBadge = (status) => {
+        switch (status) {
+          case 'Orçamento': return '<span class="badge-pill status-blue">Orçamento</span>';
+          case 'Em andamento': return '<span class="badge-pill status-green">Em andamento</span>';
+          case 'Revisão': return '<span class="badge-pill status-amber">Revisão</span>';
+          case 'Concluído': return '<span class="badge-pill status-green" style="background: rgba(191,255,60,0.25);">Concluído</span>';
+          default: return `<span class="badge-pill status-gray">${status}</span>`;
+        }
+      };
+
+      tbody.innerHTML = APP_STATE.projetos.map(p => `
+        <tr>
+          <td><span style="color: #d1d5db;">${p.cliente}</span></td>
+          <td><strong style="color: #ffffff;">${p.nome}</strong></td>
+          <td>${getStatusBadge(p.status)}</td>
+          <td>${fmtDataPt(p.prazo)}</td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div class="progress-bar-bg" style="margin: 0;">
+                <div class="progress-bar-fill" style="width: ${p.progresso}%;"></div>
+              </div>
+              <span style="font-size: 0.75rem; font-weight: 700; color: var(--accent); min-width: 32px;">${p.progresso}%</span>
+            </div>
+          </td>
+          <td><strong style="color: #ffffff;">${fmtBrl(p.valor)}</strong></td>
+        </tr>
+      `).join('');
+    }
+
+    // 5. RECIBOS
+    function renderRecibos() {
+      const tbody = document.getElementById('recibos-table-body');
+
+      const getStatusBadge = (st) => {
+        switch (st) {
+          case 'Emitido': return '<span class="badge-pill status-amber">Emitido</span>';
+          case 'Pago': return '<span class="badge-pill status-green">Pago</span>';
+          case 'Cancelado': return '<span class="badge-pill status-red">Cancelado</span>';
+          default: return `<span class="badge-pill status-gray">${st}</span>`;
+        }
+      };
+
+      tbody.innerHTML = APP_STATE.recibos.map(r => `
+        <tr>
+          <td><code style="color: var(--accent); font-weight: 700;">${r.id}</code></td>
+          <td><strong style="color: #ffffff;">${r.cliente}</strong></td>
+          <td><span class="badge-pill status-gray">${r.tipo}</span></td>
+          <td>${fmtDataPt(r.data)}</td>
+          <td><strong style="color: #ffffff;">${fmtBrl(r.valor)}</strong></td>
+          <td>${getStatusBadge(r.status)}</td>
+          <td style="text-align: right;">
+            <button class="btn-secondary btn-sm" onclick="exportReceiptPDF('${r.id}')">
+              📄 PDF
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // FORM HANDLERS
+    function handleSalvarCliente(e) {
+      e.preventDefault();
+      const nome = document.getElementById('cli-nome').value.trim();
+      const email = document.getElementById('cli-email').value.trim();
+      const telefone = document.getElementById('cli-tel').value.trim();
+      const documento = document.getElementById('cli-doc').value.trim();
+      const obs = document.getElementById('cli-obs').value.trim();
+
+      if (!nome) return;
+
+      const newCli = {
+        id: String(Date.now()),
+        nome,
+        email,
+        telefone,
+        documento,
+        status: 'Ativo',
+        obs
+      };
+
+      APP_STATE.clientes.unshift(newCli);
+      e.target.reset();
+      closeModal('modal-cliente');
+      renderAll();
+    }
+
+    function handleSalvarProjeto(e) {
+      e.preventDefault();
+      const cliente = document.getElementById('proj-cliente').value;
+      const nome = document.getElementById('proj-nome').value.trim();
+      const status = document.getElementById('proj-status').value;
+      const prazo = document.getElementById('proj-prazo').value;
+      const progresso = parseInt(document.getElementById('proj-progresso').value, 10) || 0;
+      const valor = parseFloat(document.getElementById('proj-valor').value) || 0;
+
+      if (!nome || !cliente) return;
+
+      const newProj = {
+        id: String(Date.now()),
+        cliente,
+        nome,
+        status,
+        prazo,
+        progresso,
+        valor
+      };
+
+      APP_STATE.projetos.unshift(newProj);
+      e.target.reset();
+      setupDateInputs();
+      closeModal('modal-projeto');
+      renderAll();
+    }
+
+    function handleSalvarDespesa(e) {
+      e.preventDefault();
+      const descricao = document.getElementById('desp-desc').value.trim();
+      const categoria = document.getElementById('desp-cat').value;
+      const valor = parseFloat(document.getElementById('desp-valor').value) || 0;
+      const data = document.getElementById('desp-data').value;
+
+      if (!descricao || !valor) return;
+
+      const newDesp = {
+        id: String(Date.now()),
+        descricao,
+        categoria,
+        valor,
+        data
+      };
+
+      APP_STATE.despesas.unshift(newDesp);
+      e.target.reset();
+      setupDateInputs();
+      closeModal('modal-despesa');
+      renderAll();
+    }
+
+    function handleSalvarRecibo(e) {
+      e.preventDefault();
+      const cliente = document.getElementById('rec-cliente').value;
+      const tipo = document.getElementById('rec-tipo').value;
+      const status = document.getElementById('rec-status').value;
+      const valor = parseFloat(document.getElementById('rec-valor').value) || 0;
+      const data = document.getElementById('rec-data').value;
+      const descricao = document.getElementById('rec-desc').value.trim();
+
+      if (!cliente || !valor) return;
+
+      const randomNum = Math.floor(100000 + Math.random() * 900000);
+      const newRec = {
+        id: `REC-${randomNum}`,
+        cliente,
+        tipo,
+        status,
+        valor,
+        data,
+        descricao: descricao || `Prestação de serviços para ${cliente}`
+      };
+
+      APP_STATE.recibos.unshift(newRec);
+      e.target.reset();
+      setupDateInputs();
+      closeModal('modal-recibo');
+      renderAll();
+    }
+
+    // EXPORTAÇÃO PDF & DOCUMENTOS
+    function exportReceiptPDF(reciboId) {
+      const rec = APP_STATE.recibos.find(r => r.id === reciboId);
+      if (!rec) return;
+
+      const container = document.getElementById('print-content');
+      document.getElementById('print-modal-title').textContent = `Recibo Oficial - ${rec.id}`;
+
+      container.innerHTML = `
+        <div class="receipt-header-black">
+          <div>
+            <div style="font-size: 1.4rem; font-weight: 800; letter-spacing: 0.18em; color: #ffffff;">
+              APEXEL<span style="color: var(--accent);">.</span>
+            </div>
+            <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af;">
+              Gestão Empresarial & Financeira
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 1.1rem; font-weight: 800; color: var(--accent);">${rec.id}</div>
+            <div style="font-size: 0.75rem; color: #d1d5db;">Data: ${fmtDataPt(rec.data)}</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e5e7eb;">
+          <h2 style="margin: 0 0 6px 0; font-size: 1.25rem; color: #111827;">RECIBO DE PAGAMENTO</h2>
+          <p style="margin: 0; font-size: 0.85rem; color: #4b5563;">
+            Comprovante fiscal e operacional gerado através da plataforma APEXEL Enterprise.
+          </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+          <div style="background: #f9fafb; padding: 14px; border-radius: 8px; border: 1px solid #e5e7eb;">
+            <span class="label-caps" style="color: #6b7280;">Sacado / Cliente</span>
+            <div style="font-weight: 700; color: #111827; margin-top: 4px; font-size: 1rem;">${rec.cliente}</div>
+            <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Tipo: ${rec.tipo}</div>
+          </div>
+          <div style="background: #f9fafb; padding: 14px; border-radius: 8px; border: 1px solid #e5e7eb;">
+            <span class="label-caps" style="color: #6b7280;">Situação do Recibo</span>
+            <div style="font-weight: 800; color: ${rec.status === 'Pago' ? '#16a34a' : (rec.status === 'Cancelado' ? '#dc2626' : '#d97706')}; margin-top: 4px; font-size: 1rem;">
+              ● ${rec.status.toUpperCase()}
+            </div>
+            <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Emissão eletrônica certificada</div>
+          </div>
+        </div>
+
+        <div style="background: #f3f4f6; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+          <span class="label-caps" style="color: #6b7280;">Descrição e Detalhamento dos Serviços</span>
+          <p style="margin: 6px 0 0 0; font-size: 0.92rem; color: #1f2937; line-height: 1.5;">
+            ${rec.descricao || 'Prestação continuada de serviços técnicos especializados e consultoria.'}
+          </p>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #000000; color: #ffffff; padding: 18px 22px; border-radius: 8px;">
+          <div>
+            <div style="font-size: 0.75rem; text-transform: uppercase; color: #9ca3af; letter-spacing: 0.08em;">VALOR TOTAL LIQUIDADO</div>
+            <div style="font-size: 0.85rem; color: #d1d5db;">Moeda Corrente: Real (BRL)</div>
+          </div>
+          <div style="font-size: 1.8rem; font-weight: 900; color: var(--accent);">
+            ${fmtBrl(rec.valor)}
+          </div>
+        </div>
+
+        <div style="margin-top: 40px; display: flex; justify-content: space-between; align-items: flex-end; padding-top: 16px; border-top: 1px dashed #d1d5db; font-size: 0.75rem; color: #6b7280;">
+          <div>
+            <div>APEXEL TECNOLOGIA LTDA</div>
+            <div>CNPJ: 00.000.000/0001-99 • São Paulo, SP</div>
+          </div>
+          <div style="text-align: right;">
+            <div>Autenticação digital: ${rec.id}-${Date.now().toString().slice(-6)}</div>
+            <div>Página 1 de 1</div>
+          </div>
+        </div>
+      `;
+
+      openModal('modal-print');
+    }
+
+    function exportMonthlyReport() {
+      const container = document.getElementById('print-content');
+      document.getElementById('print-modal-title').textContent = 'Relatório Financeiro Mensal (2025-03)';
+
+      const faturamento = APP_STATE.recibos
+        .filter(r => r.status === 'Pago' && r.data.startsWith('2025-03'))
+        .reduce((s, r) => s + r.valor, 0);
+
+      const despesas = APP_STATE.despesas
+        .filter(d => d.data.startsWith('2025-03'))
+        .reduce((s, d) => s + d.valor, 0);
+
+      const lucro = faturamento - despesas;
+
+      const recibosMes = APP_STATE.recibos.filter(r => r.data.startsWith('2025-03'));
+
+      container.innerHTML = `
+        <div class="receipt-header-black">
+          <div>
+            <div style="font-size: 1.4rem; font-weight: 800; letter-spacing: 0.18em; color: #ffffff;">
+              APEXEL<span style="color: var(--accent);">.</span>
+            </div>
+            <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af;">
+              Relatório Executivo Financeiro
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 1.1rem; font-weight: 800; color: var(--accent);">MARÇO / 2025</div>
+            <div style="font-size: 0.75rem; color: #d1d5db;">Emissão: ${new Date().toLocaleDateString('pt-BR')}</div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px;">
+          <div style="background: #f9fafb; padding: 12px; border-radius: 8px; border: 1px solid #e5e7eb;">
+            <div class="label-caps" style="color: #6b7280;">Faturamento</div>
+            <div style="font-size: 1.25rem; font-weight: 800; color: #16a34a; margin-top: 4px;">${fmtBrl(faturamento)}</div>
+          </div>
+          <div style="background: #f9fafb; padding: 12px; border-radius: 8px; border: 1px solid #e5e7eb;">
+            <div class="label-caps" style="color: #6b7280;">Despesas</div>
+            <div style="font-size: 1.25rem; font-weight: 800; color: #dc2626; margin-top: 4px;">${fmtBrl(despesas)}</div>
+          </div>
+          <div style="background: #000000; padding: 12px; border-radius: 8px;">
+            <div class="label-caps" style="color: #9ca3af;">Lucro Líquido</div>
+            <div style="font-size: 1.25rem; font-weight: 800; color: var(--accent); margin-top: 4px;">${fmtBrl(lucro)}</div>
+          </div>
+        </div>
+
+        <h4 style="margin: 0 0 10px 0; font-size: 0.95rem; color: #111827; text-transform: uppercase; letter-spacing: 0.05em;">
+          Demonstrativo de Recibos do Período
+        </h4>
+
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-bottom: 20px;">
+          <thead>
+            <tr style="background: #f3f4f6; text-align: left;">
+              <th style="padding: 8px;">Nº Recibo</th>
+              <th style="padding: 8px;">Cliente</th>
+              <th style="padding: 8px;">Data</th>
+              <th style="padding: 8px;">Status</th>
+              <th style="padding: 8px; text-align: right;">Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${recibosMes.map(r => `
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 8px; font-weight: 700;">${r.id}</td>
+                <td style="padding: 8px;">${r.cliente}</td>
+                <td style="padding: 8px;">${fmtDataPt(r.data)}</td>
+                <td style="padding: 8px; font-weight: 600;">${r.status}</td>
+                <td style="padding: 8px; text-align: right; font-weight: 700;">${fmtBrl(r.valor)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <div style="margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 12px; font-size: 0.72rem; color: #6b7280; display: flex; justify-content: space-between;">
+          <span>APEXEL Core Financial Engine</span>
+          <span>Documento gerado automaticamente para auditoria contábil</span>
+        </div>
+      `;
+
+      openModal('modal-print');
+    }
+  </script>
+<script>
+/* Skip artifact shell — fixed helpers served beside every artifact. */
+(function () {
+  "use strict";
+
+  var fmt = {
+    num: function (v, opts) { return new Intl.NumberFormat("pt-BR", opts || {}).format(v); },
+    brl: function (v) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v); },
+    pct: function (v) { return new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 1 }).format(v); }
+  };
+
+  // axisFmt keeps axis tick labels short (compact notation) so long values
+  // (e.g. full BRL amounts) never clip against the plot edge.
+  function axisFmt(v) {
+    return fmt.num(v, { notation: "compact", maximumFractionDigits: 1 });
+  }
+
+  // format accepts a function OR one of the fmt names ("num" | "brl" | "pct").
+  function coerceFormat(spec) {
+    if (typeof spec === "function") return spec;
+    if (typeof spec === "string" && fmt[spec]) return fmt[spec];
+    return function (v) { return fmt.num(v); };
+  }
+
+  function accent() {
+    return getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#2563eb";
+  }
+  function mutedColor() {
+    return getComputedStyle(document.documentElement).getPropertyValue("--text-muted").trim() || "#5b6472";
+  }
+  function svgEl(tag, attrs) {
+    var el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (var k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+  }
+  function frame(el, w, h) {
+    var svg = svgEl("svg", { viewBox: "0 0 " + w + " " + h, role: "img" });
+    el.innerHTML = "";
+    el.appendChild(svg);
+    return svg;
+  }
+
+  // maxOf guards the axis scale: empty values would give -Infinity (truthy,
+  // so "|| 1" can't catch it) and a non-positive max would flip the chart.
+  function maxOf(values) {
+    var m = values.length ? Math.max.apply(null, values) : 0;
+    return m > 0 ? m : 1;
+  }
+
+  // bar(el, {labels:[], values:[], color?, format?}) — vertical bar chart.
+  function bar(el, cfg) {
+    var W = 640, H = 280, padL = 46, padB = 30, padT = 12;
+    var svg = frame(el, W, H);
+    var max = maxOf(cfg.values);
+    var n = cfg.values.length;
+    var plotW = W - padL - 12, plotH = H - padT - padB;
+    var step = plotW / n, bw = Math.min(step * 0.62, 64);
+    var color = cfg.color || accent();
+    var f = coerceFormat(cfg.format);
+    for (var g = 0; g <= 4; g++) {
+      var gy = padT + plotH - (plotH * g) / 4;
+      svg.appendChild(svgEl("line", { x1: padL, y1: gy, x2: W - 12, y2: gy, stroke: "currentColor", "stroke-opacity": 0.08 }));
+      var lbl = svgEl("text", { x: padL - 8, y: gy + 4, "text-anchor": "end", "font-size": 10, fill: mutedColor() });
+      lbl.textContent = axisFmt((max * g) / 4);
+      svg.appendChild(lbl);
+    }
+    cfg.values.forEach(function (v, i) {
+      var bh = Math.max(0, (v / max) * plotH);
+      var x = padL + i * step + (step - bw) / 2;
+      var y = padT + plotH - bh;
+      var r = svgEl("rect", { x: x, y: y, width: bw, height: bh, rx: 4, fill: color });
+      var t = svgEl("title", {});
+      t.textContent = cfg.labels[i] + ": " + f(v);
+      r.appendChild(t);
+      svg.appendChild(r);
+      var tx = svgEl("text", { x: x + bw / 2, y: H - 10, "text-anchor": "middle", "font-size": 11, fill: mutedColor() });
+      tx.textContent = cfg.labels[i];
+      svg.appendChild(tx);
+    });
+  }
+
+  // line(el, {labels:[], values:[], color?, format?}) — single-series line.
+  function line(el, cfg) {
+    var W = 640, H = 280, padL = 46, padB = 30, padT = 12;
+    var svg = frame(el, W, H);
+    var max = maxOf(cfg.values);
+    var n = cfg.values.length;
+    var plotW = W - padL - 16, plotH = H - padT - padB;
+    var color = cfg.color || accent();
+    var f = coerceFormat(cfg.format);
+    for (var g = 0; g <= 4; g++) {
+      var gy = padT + plotH - (plotH * g) / 4;
+      svg.appendChild(svgEl("line", { x1: padL, y1: gy, x2: W - 16, y2: gy, stroke: "currentColor", "stroke-opacity": 0.08 }));
+      var lbl = svgEl("text", { x: padL - 8, y: gy + 4, "text-anchor": "end", "font-size": 10, fill: mutedColor() });
+      lbl.textContent = axisFmt((max * g) / 4);
+      svg.appendChild(lbl);
+    }
+    var pts = cfg.values.map(function (v, i) {
+      var x = padL + (n === 1 ? plotW / 2 : (plotW * i) / (n - 1));
+      var y = padT + plotH - (v / max) * plotH;
+      return [x, y];
+    });
+    var d = pts.map(function (p, i) { return (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1); }).join(" ");
+    svg.appendChild(svgEl("path", { d: d, fill: "none", stroke: color, "stroke-width": 2, "stroke-linejoin": "round" }));
+    pts.forEach(function (p, i) {
+      var c = svgEl("circle", { cx: p[0], cy: p[1], r: 3.5, fill: color });
+      var t = svgEl("title", {});
+      t.textContent = cfg.labels[i] + ": " + f(cfg.values[i]);
+      c.appendChild(t);
+      svg.appendChild(c);
+      var tx = svgEl("text", { x: p[0], y: H - 10, "text-anchor": "middle", "font-size": 11, fill: mutedColor() });
+      tx.textContent = cfg.labels[i];
+      svg.appendChild(tx);
+    });
+  }
+
+  // donut(el, {labels:[], values:[], colors?}) — donut with center total.
+  function donut(el, cfg) {
+    var W = 320, H = 280, cx = W / 2, cy = H / 2, R = 92, r = 58;
+    var svg = frame(el, W, H);
+    var total = cfg.values.reduce(function (a, b) { return a + b; }, 0) || 1;
+    var palette = cfg.colors || [accent(), "#1baf7a", "#eda100", "#e34948", "#4a3aa7", "#e87ba4"];
+    var a0 = -Math.PI / 2;
+    cfg.values.forEach(function (v, i) {
+      var a1 = a0 + (v / total) * Math.PI * 2;
+      var large = a1 - a0 > Math.PI ? 1 : 0;
+      var p = ["M", cx + R * Math.cos(a0), cy + R * Math.sin(a0),
+        "A", R, R, 0, large, 1, cx + R * Math.cos(a1), cy + R * Math.sin(a1),
+        "L", cx + r * Math.cos(a1), cy + r * Math.sin(a1),
+        "A", r, r, 0, large, 0, cx + r * Math.cos(a0), cy + r * Math.sin(a0), "Z"].join(" ");
+      var path = svgEl("path", { d: p, fill: palette[i % palette.length] });
+      var t = svgEl("title", {});
+      t.textContent = cfg.labels[i] + ": " + fmt.num(v) + " (" + fmt.pct(v / total) + ")";
+      path.appendChild(t);
+      svg.appendChild(path);
+      a0 = a1;
+    });
+    var center = svgEl("text", { x: cx, y: cy + 5, "text-anchor": "middle", "font-size": 20, "font-weight": 650, fill: "currentColor" });
+    center.textContent = fmt.num(total);
+    svg.appendChild(center);
+  }
+
+  window.skipShell = { fmt: fmt };
+  window.skipChart = { bar: bar, line: line, donut: donut };
+})();
+
+</script>
+</body>
+</html>
